@@ -1,4 +1,4 @@
-import { createUser, getUserByUsername } from "../models/userModel.js";
+import UserModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
@@ -14,7 +14,7 @@ class AuthController {
             console.log("Register Request:", req.body);
 
             const { username, password } = req.body;
-            await createUser(username, password);
+            await UserModel.createUser(username, password);
 
             console.log(`User registered: ${username}`);
             res.status(201).json({ message: "User registered successfully!" });
@@ -30,7 +30,7 @@ class AuthController {
             console.log("Login Request:", req.body);
 
             const { username, password } = req.body;
-            const user = await getUserByUsername(username); // Added 'await'
+            const user = await UserModel.getUserByUsername(username); 
 
             if (!user || !(await bcrypt.compare(password, user.password))) {
                 console.warn(`Invalid login attempt for username: ${username}`);
