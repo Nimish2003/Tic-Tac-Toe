@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import Api from "../api";
 
 const socket = io("http://localhost:5000");
 
@@ -11,37 +12,103 @@ const Room = () => {
   const [isHost, setIsHost] = useState(false);
   const [symbol, setSymbol] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [hostSymbol, setHostSymbol] = useState(null)
   const username = localStorage.getItem("username");
+  const [game, setGame] = useState(false)
 
   useEffect(() => {
-  const username = localStorage.getItem("username");
+    socket.emit("join-room", { roomId, username: "Room" });
 
-  // ✅ Join the room when the component mounts
-  socket.emit("join-room", { roomId, username:"Room" });
-
-  // ✅ Listen for updates
     socket.on("room-updated", ({ players }) => {
-    console.log("Players updated:", players);
-    setPlayers([...players]);
-    setIsHost(players[0] === username);
-  });
+      setPlayers([...players]);
+      setIsHost(players[0] === username);
+    });
 
-  return () => {
-    socket.off("room-updated");
-  };
-}, [roomId]);
+    return () => {
+      socket.off("room-updated");
+    };
+  }, [roomId]);
 
   const handleSelectSymbol = (selectedSymbol) => {
-    setSymbol(selectedSymbol);
-    setGameStarted(true);
+    setHostSymbol(selectedSymbol);
     socket.emit("select-symbol", { roomId, selectedSymbol });
+    socket.on("symbol-selected",async (symbol, creatorId)=>{
+      console.log("i am listening to symbol selected");
+  
+      if (isHost){
+        localStorage.setItem("symbol", selectedSymbol);
+      }else{
+        if (selectedSymbol == "X"){
+          localStorage.setItem("symbol", "O");
+        }
+        else{
+          localStorage.setItem("symbol", "X");
+        }
+      }
+      console.log("after if i am setting");
+      const backendSymbol = localStorage.getItem("symbol")
+      let player_x = null
+      let player_o = null
+       if ( isHost && backendSymbol == "X" ){
+        player_x = players[0]
+        player_o= players[1]
+      }
+      else if(isHost && backendSymbol == "O"){
+        player_x = players[1]
+        player_o = players[0]
+      }
+      const data = {
+        player_x,player_o
+      }
+
+        try {
+        
+        // const gameupdate = await Api.addGameDetails(data)
+        // console.log(gameupdate);
+        
+      } catch (error) {
+        console.error(error)
+      }
+      navigate(`/dashboard/game/${roomId}`);
+    })
   };
 
-  // ✅ Exit Room
+  useEffect(() => {
+    socket.on("symbol-selected",(symbol, creatorId)=>{
+      console.log("i am listening to symbol selected", symbol);
+      
+      if (isHost){
+        localStorage.setItem("symbol", symbol.symbol);
+      }else{
+        if (symbol.symbol == "X"){
+          localStorage.setItem("symbol", "O");
+        }
+        else{
+          localStorage.setItem("symbol", "X");
+        }
+      }
+      console.log("after if i am setting");
+      // setGameStarted(true)
+      navigate(`/dashboard/game/${roomId}`);
+    })
+  
+  }, [])
+  
+
   const handleExitRoom = () => {
     socket.emit("leave-room", { roomId, username });
-    navigate("/dashboard/create-room"); 
+    navigate("/dashboard/create-room");
   };
+
+  // useEffect(() => {
+  //   console.log("I am called");
+  //   if (gameStarted) {
+  //     console.log("I am navigated")
+  //     navigate(`/dashboard/game/${roomId}`);
+  //   }
+  // }, [gameStarted, roomId]);
+
+
 
   return (
     <div className="flex flex-col items-center bg-[#3f0877] h-screen justify-center text-white">
@@ -71,7 +138,6 @@ const Room = () => {
           <p className="mt-4 text-green-600 font-bold">Game Started! You are {symbol}</p>
         )}
 
-        {/* ✅ Exit Room Button */}
         <button
           className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg"
           onClick={handleExitRoom}

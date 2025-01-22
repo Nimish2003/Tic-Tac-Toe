@@ -14,17 +14,76 @@ class GameModel {
         }
     }
 
+    static async addGameDetails(player_x, player_o ) {
+      try {
+          
+          const query = `INSERT INTO games (player_x, player_o, status ) VALUES (?, ?, ?)`;
+         const temp = await db.run(query, [player_x, player_o , 'in_progress']);
+          console.log(temp);
+          return temp.lastID;
+          
+      } catch (err) {
+          throw err;
+      }
+  }
+
+  static async addMove(game_id, player, position,move_number ) {
+    try {
+        
+        const query = `INSERT INTO moves (game_id, player, position,move_number ) VALUES (?, ?, ?,?)`;
+        const temp = await db.run(query, [game_id, player, position,move_number]);
+        console.log(temp);
+       
+    } catch (err) {
+        throw err;
+    }
+}
+
     static async addMove(gameId, player, position) {
+        
         await db.run("INSERT INTO moves (game_id, player, position) VALUES (?, ?, ?)", [gameId, player, position]);
     }
+
+    static async addOpponent( room_id, opponent) {
+          try {              
+              const query = `UPDATE rooms SET opponent = ? WHERE room_id = ?;`;
+              await db.run(query, [opponent,room_id]);
+          } catch (err) {
+              throw err;
+          }
+      }
+  
+  
+      
 
     static async updateGameStatus(gameId, status) {
         await db.run("UPDATE games SET status = ? WHERE id = ?", [status, gameId]);
     }
 
     static async getGameHistory(userId) {
-        return await db.all("SELECT * FROM games WHERE player1 = ? OR player2 = ?", [userId, userId]);
+     
+      
+        const query = `
+          SELECT g.id AS game_id, 
+                 CASE 
+                   WHEN g.player_x = ? THEN g.player_o 
+                   ELSE g.player_x 
+                 END AS opponent,
+                 g.winner,
+                 g.status,
+                 m.player,
+                 m.position,
+                 m.move_number
+          FROM games g
+          LEFT JOIN moves m ON g.id = m.game_id
+          WHERE g.player_x = ? OR g.player_o = ?
+          ORDER BY g.id, m.move_number;
+        `;
+        const data = await db.all(query, [userId, userId, userId]);
+
+        return data
     }
+    
     static async joinRoom(req, res) {
     try {
       const { roomId } = req.body;

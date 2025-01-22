@@ -20,12 +20,14 @@ const CreateRoom = () => {
         toast.success("Room created successfully!");
 
         // ✅ Store username locally
+        localStorage.setItem("username", username);
       } catch (error) {
         console.error("Error saving room data:", error);
         toast.error("Failed to save room data. Please try again.");
       }
-
-      navigate(`/dashboard/room/${roomId}`); // ✅ Navigate to room
+      
+      
+      navigate(`/dashboard/room/${roomId}`); 
     });
 
     return () => {

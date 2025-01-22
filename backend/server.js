@@ -15,7 +15,9 @@ const io = new Server(server, {
   },
 });
 
-const rooms = {}; // Store room data
+const rooms = {}; 
+const players = {};
+let count = 0;
 
 io.on("connection", (socket) => {
   console.log(`New player connected: ${socket.id}`);
@@ -24,12 +26,11 @@ io.on("connection", (socket) => {
   socket.on("create-room", ({ hostUsername }) => {
     const roomId = uuidv4();
     rooms[roomId] = { host: hostUsername, players: [hostUsername] };
-
     console.log(`Room created: ${roomId} by ${hostUsername}`);
-
     socket.join(roomId);
     socket.emit("room-created", { roomId });
     io.to(roomId).emit("room-updated", { roomId, players: rooms[roomId].players });
+    count = 0;
   });
 
   // Join an existing room
@@ -58,7 +59,33 @@ io.on("connection", (socket) => {
       return;
     }
     console.log(`Symbol selected for room ${roomId}: ${selectedSymbol}`);
-    io.to(roomId).emit("symbol-selected", { selectedSymbol });
+    io.emit("symbol-selected", { symbol: selectedSymbol, creatorId: rooms[roomId].players  });
+  });
+
+  // Handle board update when a move is made
+    socket.on("make-move", ({ roomId, board, isXTurn }) => {
+    if (!rooms[roomId]) {
+      socket.emit("error", { message: "Room does not exist." });
+      return;
+    }
+
+    console.log(`Move made in room ${roomId}. Board: ${board}, Next Turn: ${isXTurn ? "X" : "O"}`);
+    
+    
+    io.emit("update-board", { board, isXTurn });
+  });
+
+  // Handle game over
+  socket.on("game-over", ({ roomId, winner }) => {
+    if (!rooms[roomId]) {
+      socket.emit("error", { message: "Room does not exist." });
+      return;
+    } 
+
+    console.log(`Game over in room ${roomId}. Winner: ${winner}`);
+
+    // Broadcast the winner to all players in the room
+    io.emit("game-over", { winner });
   });
 
   // Handle player leaving the room

@@ -14,6 +14,7 @@ import CreateRoom from './pages/CreateRoom';
 import History from './pages/History';
 import JoinRoom from './pages/JoinRoom';
 import Room from './pages/Room';
+import Game from './components/Game';
 
 // Layout with Navbar & Footer (Only for Dashboard)
 const MainLayout = () => (
@@ -74,11 +75,12 @@ const router = createBrowserRouter([
     path: '/dashboard',
     element: <MainLayout />, 
     children: [
-      { path: '', element: <Dashboard /> },  
+      { path: '', element: <CreateRoom /> },  
       { path: 'create-room', element: <CreateRoom /> },  
       { path: 'history', element: <History /> },  
       { path: 'join-room', element: <JoinRoom /> },  
       { path: 'room/:roomId', element: <Room /> },  
+      {path:"game/:roomId" ,element: <Game /> },  
     ],
   },
 ]);

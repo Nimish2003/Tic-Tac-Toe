@@ -10,4 +10,8 @@ router.post("/finish", authMiddleware, GameController.finishGame);
 router.get("/history", authMiddleware, GameController.getHistory);
 router.post('/create-room', GameController.createRoom);
 router.post("/join-room", GameController.joinRoom);
+router.post("/add-opponent", GameController.addOpponent);
+router.post("/game-details", GameController.addGameDetails);
+router.get("/history/:id", GameController.getHistory);
+
 export default router;

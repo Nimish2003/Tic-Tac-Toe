@@ -36,9 +36,39 @@ class GameController {
 
     async getHistory(req, res) {
         try {
-            const userId = req.user.userId;
-            const history = getGameHistory(userId);
-            res.json(history);
+            const userId = req.params;
+            console.log(userId);
+            
+            const data = await GameModel.getGameHistory(userId.id);
+            console.log(data);
+            
+            const games = data.reduce((acc, row) => {
+                const game = acc.find((g) => g.id === row.game_id);
+                if (!game) {
+                  acc.push({
+                    id: row.game_id,
+                    opponent: row.opponent,
+                    result: row.status === "completed" ? (row.winner === userId ? "Win" : "Loss") : "Draw",
+                    moves: [
+                      {
+                        player: row.player,
+                        position: row.position,
+                        move_number: row.move_number,
+                      },
+                    ],
+                  });
+                } else {
+                  game.moves.push({
+                    player: row.player,
+                    position: row.position,
+                    move_number: row.move_number,
+                  });
+                }
+                return acc;
+              }, []);
+          
+              res.status(200).json(games);
+
         } catch (error) {
             console.error("History Fetch Error:", error);
             res.status(500).json({ error: "Could not fetch history" });
@@ -56,6 +86,41 @@ class GameController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+
+    async addOpponent(req, res) {
+        try {
+            const { room_id, opponent } = req.body;
+            console.log('Request body:', req.body);            
+            const result = await GameModel.addOpponent(room_id, opponent);
+            console.log("result",result);
+            res.status(201).json({ result, message: 'Opponent added successfully' });
+        } catch (error) {
+            console.error('Error adding opponent:', error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
+
+
+    async addGameDetails(req, res) {
+        try {
+          const { player_x, player_o } = req.body;
+      
+          console.log('Request body:', req.body);
+      
+          // Call the model method to add game details and get the game ID
+          const gameId = await GameModel.addGameDetails(player_x, player_o);
+      
+          console.log("Game ID:", gameId);
+      
+          // Return the game ID as part of the response
+          res.status(201).json({ gameId, message: 'Game Details Added' });
+        } catch (error) {
+          console.error('Error adding Game Details:', error);
+          res.status(500).json({ message: 'Internal server error' });
+        }
+      }
+      
 
     async joinRoom(req, res) {
         try {

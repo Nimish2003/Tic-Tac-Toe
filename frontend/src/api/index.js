@@ -68,17 +68,24 @@ class Api {
         return await api.post('/api/game/create-room', data);
     }
     
+    static async addOpponent(data) {
+        return await api.post('/api/game/add-opponent', data);
+    }
+    
 
     static async joinGameRoom(data) {
         return await api.post('/api/game/join-room', data);
+    }
+    static async addGameDetails(data) {
+        return await api.post('/api/game/game-details', data);
     }
 
     static async makeMove(data) {
         return await api.post('/api/game/make-move', data);
     }
 
-    static async getGameHistory() {
-        return await api.get('/api/game/history');
+    static async getGameHistory(username) {
+        return await api.get(`api/game/history/${username}`);
     }
 }
 

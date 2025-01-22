@@ -74,7 +74,7 @@ const NavLeft = ({ setIsOpen }) => {
       >
         <FiMenu />
       </motion.button>
-      <NavLink text="Dashboard" link="/dashboard" />
+      {/* <NavLink text="Dashboard" link="/dashboard" /> */}
       <NavLink text="Create Room" link="create-room" />
       <NavLink text="Join Room" link="join-room" />
       <NavLink text="History" link="history" />
