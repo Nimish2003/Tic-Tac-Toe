@@ -1,3 +1,8 @@
+## Demo
+
+[![Watch the Video](https://via.placeholder.com/800x450?text=Click+to+Watch+Demo)](https://drive.google.com/file/d/1WQSnP76bNAvFrot2JZVsCm2sKgrkZOxc/view)
+
+**Click the image above to watch the video demo of the Tic-Tac-Toe game in action.**
 # Tic-Tac-Toe Game (Full-Stack Application)
 
 This project is a full-stack Tic-Tac-Toe game where users can play against each other in real-time, track their game history, and enjoy a seamless gaming experience. Built using modern technologies, it features secure authentication, a scalable backend, and a dynamic frontend.
