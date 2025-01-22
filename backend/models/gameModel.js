@@ -2,15 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
 
 class GameModel {
-    static async createRoom(hostUsername) {
+    static async createRoom(host, room_id) {
         try {
-            const roomId = uuidv4();
+            
             const query = `INSERT INTO rooms (room_id, host, status) VALUES (?, ?, ?)`;
             
             
-            await db.run(query, [roomId, hostUsername, 'waiting']);
-            
-            return roomId;
+            await db.run(query, [room_id, host, 'waiting']);
         } catch (err) {
             throw err;
         }

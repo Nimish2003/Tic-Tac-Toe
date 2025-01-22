@@ -1,60 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { io } from "socket.io-client"; // Import socket.io-client
-import api from "../api"; // Using the centralized API file
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000"); // Persistent socket connection
 
 const JoinRoom = () => {
   const [roomId, setRoomId] = useState("");
-  const [username, setUsername] = useState(""); // Add state for username
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
-  const socket = io("http://localhost:5000"); // Connect to the socket server
 
-  const handleJoinRoom = async () => {
+  useEffect(() => {
+    
+    socket.on("room-updated", ({ roomId, players }) => {
+      toast.success("Successfully joined the room!");
+      console.log(`Current players in room (${roomId}):`, players);
+      navigate(`/dashboard/room/${roomId}`);
+    });
+
+    socket.on("error", ({ message }) => {
+      toast.error(message);
+    });
+
+    return () => {
+      socket.off("room-updated");
+      socket.off("error");
+    };
+  }, [navigate]);
+
+  const handleJoinRoom = () => {
     if (!roomId.trim() || !username.trim()) {
       toast.error("Please enter a valid Room ID and Username.");
       return;
     }
 
-    const data = {
-      roomId: roomId,
-      username: username, // Send the username
-    };
-
-    try {
-      console.log("request sent");
-
-      // Join room using the backend API (optional, depending on your server-side implementation)
-      const response = await api.joinGameRoom(data);
-
-      if (response.success) {
-        // Join the room via socket
-        socket.emit("join-room", { roomId, username });
-
-        // Listen for room updates after joining
-        socket.on("room-updated", ({ roomId, players }) => {
-          console.log(`${username} joined room: ${roomId}`);
-          console.log("Current players in room:", players);
-
-          // Handle room updates, for example, navigate to the room page
-          toast.success("Successfully joined the room!");
-          navigate(`/dashboard/room/${roomId}`);
-        });
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      console.error("Error joining room:", error);
-      toast.error(error.message || "Failed to join room.");
-    }
+    localStorage.setItem("username", username); // ✅ Store username
+    socket.emit("join-room", { roomId, username });
   };
 
   return (
     <div className="flex justify-center items-center h-screen bg-[#3f0877]">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold text-center mb-4 text-gray-700">
-          Join a Room
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-4 text-gray-700">Join a Room</h2>
         <input
           type="text"
           placeholder="Enter Room ID"

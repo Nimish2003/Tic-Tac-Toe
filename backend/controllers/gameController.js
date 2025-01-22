@@ -47,12 +47,9 @@ class GameController {
 
      async createRoom(req, res) {
         try {
-            const { hostUsername } = req.body;
-            if (!hostUsername) {
-                return res.status(400).json({ message: 'Host username is required' });
-            }
-
-            const roomId = await GameModel.createRoom(hostUsername);
+            const { host, room_id } = req.body;
+            
+            const roomId = await GameModel.createRoom(host, room_id);
             res.status(201).json({ roomId, message: 'Room created successfully' });
         } catch (error) {
             console.error('Error creating room:', error);
