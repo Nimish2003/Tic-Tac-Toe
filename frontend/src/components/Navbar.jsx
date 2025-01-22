@@ -139,6 +139,9 @@ const NavMenu = ({ isOpen }) => {
       className="absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
       <MenuLink text="Home" link="/" />
+      <NavLink text="Create Room" link="create-room" />
+      <NavLink text="Join Room" link="join-room" />
+      <NavLink text="History" link="history" />
     </motion.div>
   );
 };

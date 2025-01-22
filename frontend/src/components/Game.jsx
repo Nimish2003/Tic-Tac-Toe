@@ -104,9 +104,7 @@ const Game = () => {
       <button
         className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg"
         onClick={() => {
-            socket.emit("leave-room", { roomId, username }, () => {
-                navigate("dashboard/create-room");
-            });
+          navigate("/dashboard/create-room");
         }}
         >
         Exit Game
