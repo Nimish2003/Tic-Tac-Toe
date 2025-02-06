@@ -14,9 +14,11 @@ class GameController {
 
     async makeMove(req, res) {
         try {
-            const { gameId, player, position } = req.body;
-            addMove(gameId, player, position);
-            res.json({ message: "Move registered!" });
+            const { game_id, player, position, move_number } = req.body;
+            const response = await GameModel.addMove(game_id, player, position, move_number);
+            res.status(200).json({ message: "Move registered!" });
+            console.log(response);
+            
         } catch (error) {
             console.error("Move Error:", error);
             res.status(500).json({ error: "Could not register move" });
@@ -25,9 +27,9 @@ class GameController {
 
     async finishGame(req, res) {
         try {
-            const { gameId, status } = req.body;
-            updateGameStatus(gameId, status);
-            res.json({ message: "Game finished!" });
+            const { room_id ,winner, status } = req.body;
+            GameModel.updateGameStatus(room_id, winner, status);
+            res.status(200).json({ message: "Game finished!" });
         } catch (error) {
             console.error("Finish Game Error:", error);
             res.status(500).json({ error: "Could not update game status" });
@@ -40,7 +42,7 @@ class GameController {
             console.log(userId);
             
             const data = await GameModel.getGameHistory(userId.id);
-            console.log(data);
+            // console.log(data);
             
             const games = data.reduce((acc, row) => {
                 const game = acc.find((g) => g.id === row.game_id);
@@ -48,7 +50,7 @@ class GameController {
                   acc.push({
                     id: row.game_id,
                     opponent: row.opponent,
-                    result: row.status === "completed" ? (row.winner === userId ? "Win" : "Loss") : "Draw",
+                    result: row.status === "complete" ? (row.winner === userId.id ? "Win" : "Loss") : "Draw",
                     moves: [
                       {
                         player: row.player,
@@ -104,14 +106,14 @@ class GameController {
 
     async addGameDetails(req, res) {
         try {
-          const { player_x, player_o } = req.body;
+          const { player_x, player_o,room_id } = req.body;
       
           console.log('Request body:', req.body);
       
           // Call the model method to add game details and get the game ID
-          const gameId = await GameModel.addGameDetails(player_x, player_o);
-      
-          console.log("Game ID:", gameId);
+          const gameId = await GameModel.addGameDetails(player_x, player_o,room_id);
+          console.log("game added", gameId);
+          
       
           // Return the game ID as part of the response
           res.status(201).json({ gameId, message: 'Game Details Added' });
@@ -141,7 +143,7 @@ class GameController {
           // Add opponent to the room
           await GameModel.addOpponentToRoom(roomId, opponent);
     
-          res.json({ success: true, message: "Successfully joined the room.", roomId });
+          res.status(200).json({ success: true, message: "Successfully joined the room.", roomId });
         } catch (error) {
           console.error("Error joining room:", error);
           res.status(500).json({ success: false, message: "Server error." });

@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import Api from "../api";
 
 const socket = io("http://localhost:5000");
 
 const Game = () => {
-  const { roomId } = useParams();
+  const roomid = localStorage.getItem("roomId")
+  const { roomId } = useParams()
   const [board, setBoard] = useState(Array(9).fill(null)); // Game board
   const [isXTurn, setIsXTurn] = useState(true); // Track whose turn it is
   const [winner, setWinner] = useState(null); // Track the winner
   const username = localStorage.getItem("username");
   const symbol = localStorage.getItem("symbol"); // Fetch the player's symbol
+  const [moveNumber, setMoveNumber] = useState(symbol === "X" ? 1 : 2);
   const navigate = useNavigate();
+  
+  
+
   useEffect(() => {
+
+    console.log(roomId);
+    
     // Listen for board updates from the server
     socket.on("update-board", ({ board, isXTurn }) => {
       setBoard(board)
@@ -31,7 +40,7 @@ const Game = () => {
     // };
   }, []);
 
-  const handleCellClick = (index) => {
+  const  handleCellClick = async (index) => {
     if (board[index] || winner || (symbol === "X" && !isXTurn) || (symbol === "O" && isXTurn)) {
       return; // Prevent moves when it's not the player's turn
     }
@@ -43,12 +52,38 @@ const Game = () => {
     setIsXTurn(!isXTurn);
 
     // Emit the updated board to the server
+    
     socket.emit("make-move", { roomId, board: newBoard, isXTurn: !isXTurn });
+    let moveMade = moveNumber
+    setMoveNumber(moveMade+2)
+    const data = {
+      game_id: roomid,
+      player: username,
+      position: index,
+      move_number: moveMade
+    }
+    // Send data to backend
+    try {
+      const response = await Api.makeMove(data);
+      console.log(response);
+      
+    } catch (error) {
+      console.error("Error saving move:", error);
+    }
 
     // Check for a winner
     const gameWinner = checkWinner(newBoard);
+    const playWinner = username
+    console.log(playWinner);
+    
     if (gameWinner) {
+      const data = {
+        status: "complete",
+        winner: playWinner,
+        room_id : roomid
+      }
       setWinner(gameWinner);
+      const result = await Api.finishGame(data)
       socket.emit("game-over", { roomId, winner: gameWinner });
     }
   };
@@ -105,6 +140,8 @@ const Game = () => {
         className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg"
         onClick={() => {
           navigate("/dashboard/create-room");
+          localStorage.removeItem("symbol");
+          localStorage.removeItem("roomId");
         }}
         >
         Exit Game

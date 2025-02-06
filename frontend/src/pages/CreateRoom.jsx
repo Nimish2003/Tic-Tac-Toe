@@ -14,9 +14,10 @@ const CreateRoom = () => {
     // ✅ Listen for room creation
     socket.on("room-created", async ({ roomId }) => {
       const data = { room_id: roomId, host: username };
+      localStorage.setItem("roomId", roomId)
       try {
         // ✅ Store roomId and host: username to API
-        await Api.createGameRoom(data);
+        // await Api.createRoom(data);
         toast.success("Room created successfully!");
 
         // ✅ Store username locally

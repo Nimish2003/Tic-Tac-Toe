@@ -16,6 +16,8 @@ const History = () => {
         setLoading(true);
         const response = await Api.getGameHistory(username)
         setGames(response.data);
+        console.log(response.data);
+        
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -45,7 +47,7 @@ const History = () => {
               marginBottom: "20px",
             }}
           >
-            <h3>Game {game.id}</h3>
+            {/* <h3>Game {game.id}</h3> */}
             <p><strong>Opponent:</strong> {game.opponent}</p>
             <p><strong>Result:</strong> {game.result}</p>
             <h4 className=" font-bold">Timeline of Moves:</h4>

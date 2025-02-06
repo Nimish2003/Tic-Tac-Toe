@@ -15,6 +15,7 @@ const Room = () => {
   const [hostSymbol, setHostSymbol] = useState(null)
   const username = localStorage.getItem("username");
   const [game, setGame] = useState(false)
+  const [oppSymbol, setOppSymbol] = useState(null)
 
   useEffect(() => {
     socket.emit("join-room", { roomId, username: "Room" });
@@ -34,7 +35,8 @@ const Room = () => {
     socket.emit("select-symbol", { roomId, selectedSymbol });
     socket.on("symbol-selected",async (symbol, creatorId)=>{
       console.log("i am listening to symbol selected");
-  
+      console.log(isHost);
+      
       if (isHost){
         localStorage.setItem("symbol", selectedSymbol);
       }else{
@@ -58,17 +60,20 @@ const Room = () => {
         player_o = players[0]
       }
       const data = {
-        player_x,player_o
+        player_x,
+        player_o,
+        room_id : roomId
       }
 
+       if(isHost) {
         try {
-        
-        // const gameupdate = await Api.addGameDetails(data)
-        // console.log(gameupdate);
+        const gameupdate = await Api.addGameDetails(data)
+        setIsHost(false)
+        console.log(gameupdate);
         
       } catch (error) {
         console.error(error)
-      }
+      }}
       navigate(`/dashboard/game/${roomId}`);
     })
   };

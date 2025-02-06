@@ -28,6 +28,8 @@ const FlipNav = () => {
     // Clear the localStorage and set the loggedIn state to false
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    localStorage.removeItem("symbol");
+    localStorage.removeItem("roomId");
     setIsLoggedIn(false);
     navigate("/login"); // Redirect to login page after logout
   };

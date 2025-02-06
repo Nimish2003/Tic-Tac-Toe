@@ -87,6 +87,9 @@ class Api {
     static async getGameHistory(username) {
         return await api.get(`api/game/history/${username}`);
     }
+    static async finishGame(data) {
+        return await api.post(`api/game/finish`,data);
+    }
 }
 
 export default Api;

@@ -30,6 +30,7 @@ const JoinRoom = () => {
 
   const handleJoinRoom = async () => {
     const name = localStorage.getItem("username")
+
     console.log(name);
     
     if (!roomId.trim()) {
@@ -44,6 +45,7 @@ const JoinRoom = () => {
     try{
       console.log("addOpponent api called");
      const response =  await Api.addOpponent(data);
+     localStorage.setItem("roomId", roomId)
      console.log("Api response", response);
      
     }catch(err){

@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
 
 class GameModel {
@@ -14,24 +13,23 @@ class GameModel {
         }
     }
 
-    static async addGameDetails(player_x, player_o ) {
+    static async addGameDetails(player_x, player_o,room_id ) {
       try {
           
-          const query = `INSERT INTO games (player_x, player_o, status ) VALUES (?, ?, ?)`;
-         const temp = await db.run(query, [player_x, player_o , 'in_progress']);
+          const query = `INSERT INTO games (player_x, player_o, status, winner, room_id ) VALUES (?, ?, ?, ?, ?)`;
+          const temp = await db.run(query, [player_x, player_o , 'in_progress', 'Tie', room_id ]);
           console.log(temp);
-          return temp.lastID;
+          
           
       } catch (err) {
           throw err;
       }
   }
 
-  static async addMove(game_id, player, position,move_number ) {
-    try {
-        
-        const query = `INSERT INTO moves (game_id, player, position,move_number ) VALUES (?, ?, ?,?)`;
-        const temp = await db.run(query, [game_id, player, position,move_number]);
+  static async addMove(game_id, player, position, move_number ) {
+    try { 
+        const query = `INSERT INTO moves (game_id, player, position,move_number ) VALUES (?, ?, ?, ?)`;
+        const temp = await db.run(query, [game_id, player, position, move_number]);
         console.log(temp);
        
     } catch (err) {
@@ -39,10 +37,6 @@ class GameModel {
     }
 }
 
-    static async addMove(gameId, player, position) {
-        
-        await db.run("INSERT INTO moves (game_id, player, position) VALUES (?, ?, ?)", [gameId, player, position]);
-    }
 
     static async addOpponent( room_id, opponent) {
           try {              
@@ -56,14 +50,12 @@ class GameModel {
   
       
 
-    static async updateGameStatus(gameId, status) {
-        await db.run("UPDATE games SET status = ? WHERE id = ?", [status, gameId]);
+    static async updateGameStatus(room_id, winner,status) {
+        await db.run("UPDATE games SET status = ?, winner = ? WHERE room_id = ?", [status,winner, room_id]);
     }
 
     static async getGameHistory(userId) {
-     
-      
-        const query = `
+     const query = `
           SELECT g.id AS game_id, 
                  CASE 
                    WHEN g.player_x = ? THEN g.player_o 
@@ -75,9 +67,9 @@ class GameModel {
                  m.position,
                  m.move_number
           FROM games g
-          LEFT JOIN moves m ON g.id = m.game_id
+          LEFT JOIN moves m ON g.room_id = m.game_id
           WHERE g.player_x = ? OR g.player_o = ?
-          ORDER BY g.id, m.move_number;
+          ORDER BY g.id desc, m.move_number;
         `;
         const data = await db.all(query, [userId, userId, userId]);
 
